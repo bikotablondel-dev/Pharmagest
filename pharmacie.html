@@ -531,7 +531,12 @@ async function initListeners(){
   setSyncStatus('syncing','Chargement...');
   onValue(ref(db,'medicaments'),snap=>{medicaments=[];snap.forEach(c=>medicaments.push({fbKey:c.key,...c.val()}));renderAll();setSyncStatus('ok','Connecté • 2 postes');});
   onValue(ref(db,'ventes'),snap=>{ventes=[];snap.forEach(c=>ventes.push({fbKey:c.key,...c.val()}));renderAll();});
-  onValue(ref(db,'users'),snap=>{users=[];snap.forEach(c=>users.push({fbKey:c.key,...c.val()}));renderUsers();});
+  onValue(ref(db,'users'),snap=>{
+    users=[];
+    snap.forEach(c=>users.push({fbKey:c.key,...c.val()}));
+    renderUsers();
+    renderAll();
+  });
   const snap=await get(ref(db,'medicaments'));
   if(!snap.exists()) for(const m of DEFAULT_MEDS) await push(ref(db,'medicaments'),m);
   const usnap=await get(ref(db,'users'));
@@ -849,8 +854,13 @@ window.printRapport=function(){window.print();};
 
 // ── USERS ──
 function renderUsers(){
-  if(!document.getElementById('users-list'))return;
-  document.getElementById('users-list').innerHTML=users.map(u=>`
+  const el=document.getElementById('users-list');
+  if(!el) return;
+  if(users.length===0){
+    el.innerHTML='<p style="color:var(--text-muted);font-size:14px;text-align:center;padding:20px;">Aucun utilisateur trouvé</p>';
+    return;
+  }
+  el.innerHTML=users.map(u=>`
     <div class="user-card">
       <div class="user-avatar ${u.role==='admin'?'admin-av':''}">${(u.name||u.login).charAt(0).toUpperCase()}</div>
       <div class="user-info">
@@ -889,16 +899,27 @@ window.saveUser=async function(){
   const login=v('user-login').trim(), pass=v('user-pass').trim();
   if(!login||!pass||pass.length<4){alert('Identifiant et mot de passe (min. 4 caractères) obligatoires.');return;}
   if(!editingUserKey&&users.find(u=>u.login===login)){alert('Cet identifiant existe déjà.');return;}
-  const data={login,pass,name:v('user-name')||login,role:v('user-role')};
-  closeModal('modal-user'); setSyncStatus('syncing','...');
+  const data={login,pass,name:v('user-name')||login,role:document.getElementById('user-role').value};
+  closeModal('modal-user'); setSyncStatus('syncing','Sauvegarde...');
   if(useFirebase){
-    if(editingUserKey){const u=users.find(x=>(x.fbKey||x.login)===editingUserKey);if(u)await update(ref(db,'users/'+u.fbKey),data);}
-    else await push(ref(db,'users'),data);
+    if(editingUserKey){
+      const u=users.find(x=>(x.fbKey||x.login)===editingUserKey);
+      if(u) await update(ref(db,'users/'+u.fbKey),data);
+    } else {
+      await push(ref(db,'users'),data);
+    }
+    // Rafraîchir manuellement la liste
+    const snap=await get(ref(db,'users'));
+    users=[];
+    snap.forEach(c=>users.push({fbKey:c.key,...c.val()}));
+    renderUsers();
     setSyncStatus('ok','Connecté • 2 postes');
+    alert('✅ Utilisateur enregistré !');
   }else{
     if(editingUserKey){const i=users.findIndex(u=>(u.fbKey||u.login)===editingUserKey);if(i>=0)users[i]={...users[i],...data};}
     else users.push({...data,fbKey:'u'+Date.now()});
     saveLocal();renderUsers();setSyncStatus('offline','Mode local');
+    alert('✅ Utilisateur enregistré !');
   }
 };
 
