@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PharmaGest — Gestion Pharmacie</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f0f4f0;--surface:#fff;--surface2:#e8efe8;
+  --primary:#1a6b3c;--primary-light:#2d8f54;--primary-pale:#d4edd9;
+  --accent:#e8a020;--danger:#c0392b;--danger-pale:#fdeaea;
+  --text:#1a2a1a;--text-muted:#5a7060;--border:#c8dcc8;
+  --shadow:0 2px 16px rgba(26,107,60,.10);--shadow-lg:0 8px 40px rgba(26,107,60,.15);
+  --radius:14px;--radius-sm:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* SETUP */
+#setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f3d22,#1a6b3c,#2d8f54);}
+.setup-card{background:#fff;border-radius:24px;padding:44px 40px;width:580px;max-width:95vw;box-shadow:0 30px 80px rgba(0,0,0,.3);}
+.setup-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px;justify-content:center;}
+.setup-logo-icon{width:48px;height:48px;background:var(--primary);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+.setup-logo h1{font-family:'DM Serif Display',serif;font-size:24px;color:var(--primary);}
+.setup-card h2{font-size:18px;font-weight:600;margin-bottom:4px;}
+.setup-card .sub{color:var(--text-muted);font-size:13px;margin-bottom:24px;}
+.setup-steps{margin-bottom:24px;}
+.setup-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:14px;padding:14px;background:var(--surface2);border-radius:10px;font-size:13px;line-height:1.6;}
+.step-num{min-width:26px;height:26px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin-top:1px;}
+.setup-step a{color:var(--primary);font-weight:600;}
+.setup-step code{background:#ddd;padding:1px 5px;border-radius:4px;font-size:11px;font-family:monospace;}
+.setup-fields{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+.setup-fields input{padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);}
+.setup-fields input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-pale);}
+.setup-btn{width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;}
+.setup-btn:hover{background:var(--primary-light);}
+.setup-error{color:var(--danger);font-size:13px;margin-top:8px;text-align:center;display:none;}
+.setup-skip{text-align:center;margin-top:12px;font-size:12px;color:var(--text-muted);}
+.setup-skip button{background:none;border:none;color:var(--primary);cursor:pointer;text-decoration:underline;font-size:12px;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:none;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f3d22,#1a6b3c,#2d8f54);position:relative;}
+#login-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(232,160,32,.15) 0%,transparent 60%);}
+.login-card{background:rgba(255,255,255,.97);border-radius:24px;padding:52px 44px;width:420px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.3);}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center;}
+.login-logo-icon{width:52px;height:52px;background:var(--primary);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;}
+.login-logo h1{font-family:'DM Serif Display',serif;font-size:26px;color:var(--primary);}
+.login-logo p{font-size:11px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;}
+.login-card h2{font-size:20px;font-weight:600;margin-bottom:4px;}
+.login-card .sub{color:var(--text-muted);font-size:13px;margin-bottom:28px;}
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;font-size:12px;font-weight:600;margin-bottom:7px;color:var(--text-muted);letter-spacing:.5px;}
+.form-group input,.form-group select{width:100%;padding:13px 15px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:#fafcfa;transition:all .2s;}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px var(--primary-pale);}
+.login-btn{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:6px;}
+.login-btn:hover{background:var(--primary-light);transform:translateY(-1px);}
+.login-error{color:var(--danger);font-size:13px;margin-top:10px;text-align:center;display:none;}
+.firebase-badge{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:11px;color:var(--text-muted);}
+.firebase-badge span{width:8px;height:8px;border-radius:50%;background:#4ade80;}
+
+/* APP */
+#app{display:none;height:100vh;flex-direction:column;}
+.topbar{background:var(--primary);color:#fff;padding:0 20px;display:flex;align-items:center;height:58px;gap:12px;box-shadow:0 2px 12px rgba(0,0,0,.15);z-index:100;}
+.topbar-logo{font-family:'DM Serif Display',serif;font-size:19px;display:flex;align-items:center;gap:7px;white-space:nowrap;}
+.topbar-nav{display:flex;gap:2px;margin-left:16px;flex:1;flex-wrap:wrap;}
+.nav-btn{padding:7px 11px;border:none;background:transparent;color:rgba(255,255,255,.75);border-radius:7px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;display:flex;align-items:center;gap:4px;transition:all .2s;white-space:nowrap;}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff;}
+.nav-btn.active{background:rgba(255,255,255,.2);color:#fff;}
+.nav-btn.admin-only{border:1px solid rgba(232,160,32,.5);color:rgba(232,160,32,.9);}
+.nav-btn.admin-only:hover,.nav-btn.admin-only.active{background:rgba(232,160,32,.2);color:#f5c55a;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.sync-indicator{display:flex;align-items:center;gap:5px;padding:4px 9px;background:rgba(0,0,0,.2);border-radius:20px;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;transition:all .3s;}
+.sync-dot.syncing{background:var(--accent);animation:pulse 1s infinite;}
+.sync-dot.offline{background:#9ca3af;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.sync-label{font-size:11px;color:rgba(255,255,255,.8);}
+.user-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(255,255,255,.15);border-radius:20px;font-size:12px;}
+.role-tag{font-size:10px;padding:2px 6px;border-radius:10px;background:rgba(232,160,32,.3);color:#f5c55a;}
+.logout-btn{padding:6px 11px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:7px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:all .2s;}
+.logout-btn:hover{background:rgba(255,255,255,.25);}
+
+.main-content{flex:1;overflow-y:auto;padding:24px;}
+.page{display:none;}.page.active{display:block;}
+.page-header{margin-bottom:24px;display:flex;align-items:flex-start;justify-content:space-between;}
+.page-header-left h2{font-family:'DM Serif Display',serif;font-size:26px;color:var(--primary);}
+.page-header-left p{color:var(--text-muted);font-size:13px;margin-top:3px;}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);}
+.stat-card .label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.stat-card .value{font-size:28px;font-weight:700;color:var(--text);font-family:'DM Serif Display',serif;}
+.stat-card .sub{font-size:11px;color:var(--text-muted);margin-top:3px;}
+.stat-card.warning{border-left:4px solid var(--accent);}
+.stat-card.danger{border-left:4px solid var(--danger);}
+.stat-card.success{border-left:4px solid var(--primary);}
+.stat-card.gold{border-left:4px solid var(--accent);}
+
+.card{background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:18px;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.card-title{font-size:15px;font-weight:600;color:var(--text);}
+.card.accent-border{border-top:3px solid var(--accent);}
+.card.danger-border{border-top:3px solid var(--danger);}
+
+.btn{padding:8px 16px;border:none;border-radius:var(--radius-sm);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;transition:all .2s;display:inline-flex;align-items:center;gap:5px;}
+.btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{background:var(--primary-light);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-accent{background:var(--accent);color:#fff;}
+.btn-outline{background:transparent;color:var(--primary);border:1.5px solid var(--primary);}.btn-outline:hover{background:var(--primary-pale);}
+.btn-sm{padding:5px 10px;font-size:12px;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:var(--surface2);padding:11px 13px;text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border);}
+tbody td{padding:12px 13px;border-bottom:1px solid var(--surface2);vertical-align:middle;}
+tbody tr:hover{background:var(--surface2);}
+tbody tr:last-child td{border-bottom:none;}
+
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;display:inline-block;}
+.badge-green{background:#d4edd9;color:#1a6b3c;}
+.badge-red{background:#fdeaea;color:#c0392b;}
+.badge-orange{background:#fef3d7;color:#d68910;}
+.badge-blue{background:#dbeafe;color:#1d4ed8;}
+.badge-gold{background:#fef3d7;color:#92610a;}
+
+input[type=text],input[type=number],input[type=date],input[type=password],select{
+  width:100%;padding:9px 11px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font-family:'DM Sans',sans-serif;font-size:13px;background:#fafcfa;color:var(--text);transition:all .2s;
+}
+input:focus,select:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px var(--primary-pale);}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:18px;padding:30px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal h3{font-family:'DM Serif Display',serif;font-size:20px;color:var(--primary);margin-bottom:18px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;}
+
+.search-bar{position:relative;}
+.search-bar input{padding-left:34px;}
+.search-bar::before{content:'🔍';position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;z-index:1;}
+
+.cart-item{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--surface2);}
+.cart-item:last-child{border-bottom:none;}
+.cart-total{background:var(--primary-pale);border-radius:var(--radius-sm);padding:14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;}
+.cart-total strong{font-size:18px;color:var(--primary);font-family:'DM Serif Display',serif;}
+.alerte-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius-sm);background:var(--danger-pale);border:1px solid #f5c6cb;}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:110px;padding:6px 0;}
+.bar{flex:1;background:var(--primary-pale);border-radius:4px 4px 0 0;position:relative;transition:all .3s;min-height:4px;}
+.bar:hover{background:var(--primary);}
+.bar .bar-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--text-muted);white-space:nowrap;}
+.bar .bar-val{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:600;color:var(--primary);white-space:nowrap;}
+
+/* CAISSE */
+.caisse-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;}
+.caisse-stat{background:var(--surface);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center;}
+.caisse-stat .c-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.caisse-stat .c-value{font-size:24px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--primary);}
+.caisse-stat.gold{border-top:3px solid var(--accent);}.caisse-stat.gold .c-value{color:var(--accent);}
+.caisse-stat.green{border-top:3px solid var(--primary);}
+.fermeture-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),#d4880a);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'DM Serif Display',serif;font-size:18px;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(232,160,32,.3);}
+.fermeture-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,160,32,.4);}
+.rapport-line{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--surface2);font-size:13px;}
+.rapport-line:last-child{border-bottom:none;}
+.rapport-line strong{color:var(--primary);}
+.rapport-total{background:var(--primary);color:#fff;border-radius:var(--radius-sm);padding:16px;display:flex;justify-content:space-between;align-items:center;margin-top:14px;}
+.rapport-total span{font-size:14px;opacity:.85;}
+.rapport-total strong{font-family:'DM Serif Display',serif;font-size:22px;}
+
+/* USERS */
+.user-card{display:flex;align-items:center;gap:14px;padding:16px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;border:1px solid var(--border);}
+.user-avatar{width:42px;height:42px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;}
+.user-avatar.admin-av{background:var(--accent);}
+.user-info{flex:1;}
+.user-info .u-name{font-weight:600;font-size:14px;}
+.user-info .u-role{font-size:12px;color:var(--text-muted);}
+.user-actions{display:flex;gap:6px;}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.85);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.spinner{width:36px;height:36px;border:3px solid var(--primary-pale);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.fade-in{animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.print-only{display:none;}
+@media print{
+  .no-print{display:none!important;}
+  .print-only{display:block;}
+  body{background:#fff;}
+  .modal{box-shadow:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div><span style="color:var(--primary);font-size:15px;">Connexion Firebase...</span>
+</div>
+
+<!-- SETUP -->
+<div id="setup-screen" style="display:none;">
+  <div class="setup-card fade-in">
+    <div class="setup-logo"><div class="setup-logo-icon">💊</div><div><h1>PharmaGest</h1><p style="font-size:11px;color:var(--text-muted);">Configuration Firebase</p></div></div>
+    <h2>Connecter la base de données partagée</h2>
+    <p class="sub">Suivez ces étapes pour partager les données entre vos 2 postes (gratuit)</p>
+    <div class="setup-steps">
+      <div class="setup-step"><div class="step-num">1</div><div>Allez sur <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> → Créez un projet <code>pharmagest</code> → Menu gauche : <strong>Realtime Database</strong> → "Créer une base" → Mode test → Activer</div></div>
+      <div class="setup-step"><div class="step-num">2</div><div>⚙️ <strong>Paramètres du projet</strong> → "Général" → "Vos applications" → icône <code>&lt;/&gt;</code> Web → Nommez l'app → Copiez <code>apiKey</code>, <code>projectId</code> et <code>databaseURL</code></div></div>
+      <div class="setup-step"><div class="step-num">3</div><div>Collez les 3 valeurs ci-dessous → <strong>Connecter</strong>. Même opération sur le 2ème poste avec les mêmes valeurs.</div></div>
+    </div>
+    <div class="setup-fields">
+      <input type="text" id="cfg-apikey" placeholder="apiKey : AIzaSy..." autocomplete="off">
+      <input type="text" id="cfg-projectid" placeholder="projectId : pharmagest-xxxxx">
+      <input type="text" id="cfg-dburl" placeholder="databaseURL : https://pharmagest-xxxxx-default-rtdb.firebaseio.com">
+    </div>
+    <button class="setup-btn" onclick="connectFirebase()">🔗 Connecter Firebase</button>
+    <p class="setup-error" id="setup-error">❌ Connexion échouée. Vérifiez vos informations.</p>
+    <div class="setup-skip"><button onclick="useLocalMode()">Utiliser sans Firebase (1 seul poste, données locales)</button></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card fade-in">
+    <div class="login-logo"><div class="login-logo-icon">💊</div><div><h1>PharmaGest</h1><p>Gestion Pharmacie</p></div></div>
+    <h2>Connexion</h2><p class="sub">Entrez vos identifiants</p>
+    <div class="form-group"><label>IDENTIFIANT</label><input type="text" id="login-user" placeholder="Votre identifiant"></div>
+    <div class="form-group"><label>MOT DE PASSE</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+    <button class="login-btn" onclick="doLogin()">Se connecter →</button>
+    <p class="login-error" id="login-error">❌ Identifiants incorrects.</p>
+    <div class="firebase-badge" id="fb-badge" style="display:none;"><span></span> Connecté Firebase — données partagées</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">💊 PharmaGest</div>
+    <div class="topbar-nav">
+      <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard',this)">📊 Tableau de bord</button>
+      <button class="nav-btn" id="nav-stock" onclick="showPage('stock',this)">📦 Stock</button>
+      <button class="nav-btn" id="nav-vente" onclick="showPage('vente',this)">🛒 Vente</button>
+      <button class="nav-btn" id="nav-historique" onclick="showPage('historique',this)">📋 Historique</button>
+      <button class="nav-btn" id="nav-alertes" onclick="showPage('alertes',this)">🔔 Alertes</button>
+      <button class="nav-btn admin-only" id="nav-caisse" onclick="showPage('caisse',this)" style="display:none;">💰 Caisse</button>
+      <button class="nav-btn admin-only" id="nav-users" onclick="showPage('users',this)" style="display:none;">👥 Utilisateurs</button>
+    </div>
+    <div class="topbar-right">
+      <div class="sync-indicator"><div class="sync-dot" id="sync-dot"></div><span class="sync-label" id="sync-label">...</span></div>
+      <div class="user-badge">👤 <span id="current-user">—</span> <span class="role-tag" id="role-tag"></span></div>
+      <button class="logout-btn" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active fade-in">
+      <div class="page-header"><div class="page-header-left"><h2>Tableau de bord</h2><p id="today-date"></p></div></div>
+      <div class="card" id="migration-card" style="border:2px solid var(--accent);display:none;">
+        <div class="card-header">
+          <span class="card-title">🔄 Migrer données locales vers Firebase</span>
+        </div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Vous avez des données sur cet ordinateur en mode local. Cliquez pour les envoyer vers Firebase et les partager avec l'autre poste.</p>
+        <button class="btn btn-primary" onclick="migrerVersFirebase()">🚀 Migrer maintenant vers Firebase</button>
+      </div>
+        <div class="stat-card success"><div class="label">Médicaments</div><div class="value" id="stat-total">—</div><div class="sub">références</div></div>
+        <div class="stat-card warning"><div class="label">Stock faible</div><div class="value" id="stat-low">—</div><div class="sub">à réapprovisionner</div></div>
+        <div class="stat-card danger"><div class="label">Expirations</div><div class="value" id="stat-exp">—</div><div class="sub">dans 30 jours</div></div>
+        <div class="stat-card gold"><div class="label">Ventes aujourd'hui</div><div class="value" id="stat-sales">— FCFA</div><div class="sub" id="stat-sales-nb"></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="card"><div class="card-header"><span class="card-title">📊 Ventes — 7 derniers jours</span></div><div class="bar-chart" id="week-chart"></div><div style="height:22px;"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">🔔 Alertes stock</span></div><div id="dash-alertes"></div></div>
+      </div>
+      <div class="card"><div class="card-header"><span class="card-title">📋 Dernières ventes</span></div>
+        <div class="table-wrap"><table><thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Articles</th><th>Total</th><th>Vendeur</th></tr></thead><tbody id="dash-sales-table"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- STOCK -->
+    <div id="page-stock" class="page fade-in">
+      <div class="page-header"><div class="page-header-left"><h2>Gestion du Stock</h2><p>Médicaments et fournitures</p></div></div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">💊 Médicaments</span>
+          <div style="display:flex;gap:8px;">
+            <div class="search-bar"><input type="text" id="stock-search" placeholder="Rechercher..." oninput="filterStock()" style="width:190px;"></div>
+            <button class="btn btn-primary" onclick="openAddMed()">+ Ajouter</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Catégorie</th><th>Quantité</th><th>Prix vente</th><th>Prix achat</th><th>Expiration</th><th>Statut</th><th>Actions</th></tr></thead><tbody id="stock-table"></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- VENTE -->
+    <div id="page-vente" class="page fade-in">
+      <div class="page-header"><div class="page-header-left"><h2>Nouvelle Vente</h2><p>Créez une vente et gérez le panier</p></div></div>
+      <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">🔍 Choisir un médicament</span></div>
+          <div class="search-bar" style="margin-bottom:14px;"><input type="text" id="vente-search" placeholder="Nom du médicament..." oninput="filterVente()"></div>
+          <div class="table-wrap"><table><thead><tr><th>Nom</th><th>Catégorie</th><th>Stock</th><th>Prix</th><th>Action</th></tr></thead><tbody id="vente-med-table"></tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🛒 Panier</span><button class="btn btn-sm btn-outline" onclick="clearCart()">Vider</button></div>
+          <div id="cart-items"><p style="color:var(--text-muted);font-size:13px;text-align:center;padding:18px;">Panier vide</p></div>
+          <div class="cart-total"><span>Total à payer</span><strong id="cart-total-val">0 FCFA</strong></div>
+          <div style="margin-top:14px;">
+            <div class="form-group"><label>Client (optionnel)</label><input type="text" id="vente-client" placeholder="Nom du client"></div>
+            <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="finaliserVente()">✅ Finaliser la vente</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div id="page-historique" class="page fade-in">
+      <div class="page-header"><div class="page-header-left"><h2>Historique des Ventes</h2><p>Toutes les transactions des 2 postes</p></div></div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Toutes les ventes</span>
+          <div style="display:flex;gap:8px;"><input type="date" id="filter-date" onchange="filterHistorique()"><button class="btn btn-outline" onclick="resetFilterDate()">Réinitialiser</button></div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>N°</th><th>Date & Heure</th><th>Client</th><th>Articles</th><th>Total</th><th>Vendeur</th><th>Détail</th></tr></thead><tbody id="historique-table"></tbody></table></div>
+        <div style="margin-top:14px;display:flex;gap:8px;align-items:center;justify-content:flex-end;"><span style="font-size:12px;color:var(--text-muted);">Total filtré:</span><strong id="histo-total" style="color:var(--primary);font-size:15px;">0 FCFA</strong></div>
+      </div>
+    </div>
+
+    <!-- ALERTES -->
+    <div id="page-alertes" class="page fade-in">
+      <div class="page-header"><div class="page-header-left"><h2>Alertes & Notifications</h2></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="card"><div class="card-header"><span class="card-title">📉 Stock faible (≤ seuil)</span></div><div id="alertes-stock"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">⏰ Expiration ≤ 30 jours</span></div><div id="alertes-expiration"></div></div>
+      </div>
+    </div>
+
+    <!-- CAISSE (admin only) -->
+    <div id="page-caisse" class="page fade-in">
+      <div class="page-header">
+        <div class="page-header-left"><h2>💰 Fermeture de Caisse</h2><p>Rapport journalier et clôture — Accès Admin uniquement</p></div>
+        <div style="display:flex;gap:8px;">
+          <input type="date" id="caisse-date" onchange="renderCaisse()">
+          <button class="btn btn-outline" onclick="printRapport()">🖨️ Imprimer</button>
+        </div>
+      </div>
+      <div class="caisse-grid">
+        <div class="caisse-stat green"><div class="c-label">Nombre de ventes</div><div class="c-value" id="c-nb">0</div></div>
+        <div class="caisse-stat gold"><div class="c-label">Total encaissé</div><div class="c-value" id="c-total">0 FCFA</div></div>
+        <div class="caisse-stat"><div class="c-label">Bénéfice estimé</div><div class="c-value" id="c-benefit">0 FCFA</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">📋 Ventes du jour</span></div>
+          <div class="table-wrap"><table><thead><tr><th>Heure</th><th>Client</th><th>Articles</th><th>Total</th><th>Vendeur</th></tr></thead><tbody id="caisse-table"></tbody></table></div>
+          <div class="rapport-total" style="margin-top:14px;"><span>Total journée</span><strong id="caisse-total-bottom">0 FCFA</strong></div>
+        </div>
+        <div class="card accent-border">
+          <div class="card-header"><span class="card-title">📊 Ventes par vendeur</span></div>
+          <div id="caisse-par-vendeur"></div>
+          <div style="margin-top:20px;">
+            <div class="card-header" style="margin-bottom:14px;"><span class="card-title">📦 Top médicaments vendus</span></div>
+            <div id="caisse-top-meds"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card danger-border" style="margin-top:4px;">
+        <div class="card-header"><span class="card-title">🔒 Clôture de caisse</span></div>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px;">La fermeture de caisse archive les ventes du jour et remet le compteur à zéro. Les données restent consultables dans l'historique.</p>
+        <button class="fermeture-btn" onclick="fermerCaisse()">🔒 Fermer la caisse du <span id="caisse-date-label">aujourd'hui</span></button>
+      </div>
+    </div>
+
+    <!-- UTILISATEURS (admin only) -->
+    <div id="page-users" class="page fade-in">
+      <div class="page-header">
+        <div class="page-header-left"><h2>👥 Gestion des Utilisateurs</h2><p>Comptes et accès — Accès Admin uniquement</p></div>
+        <button class="btn btn-primary" onclick="openAddUser()">+ Ajouter un compte</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Comptes actifs</span></div>
+        <div id="users-list"></div>
+      </div>
+      <div class="card" style="background:var(--surface2);border-style:dashed;">
+        <p style="font-size:13px;color:var(--text-muted);">ℹ️ <strong>Rôles :</strong> <strong>Admin</strong> — accès complet (caisse, utilisateurs, stock, ventes). <strong>Caissier</strong> — stock et ventes uniquement.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL médicament -->
+<div class="modal-overlay" id="modal-med">
+  <div class="modal"><h3 id="modal-med-title">Ajouter un médicament</h3>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div class="form-group" style="flex:2;margin:0;"><label>Nom *</label><input type="text" id="med-nom" placeholder="ex: Paracétamol 500mg"></div>
+      <div class="form-group" style="flex:1;margin:0;"><label>Catégorie *</label><select id="med-cat"><option>Analgésique</option><option>Anémie</option><option>Anti-inflammatoire</option><option>Antibiotique</option><option>Antihistaminique</option><option>Antidiabétique</option><option>Cardiovasculaire</option><option>Dermatologie</option><option>Diarrhée</option><option>Gastro-entérologie</option><option>Neurologie</option><option>Ophtalmologie</option><option>Paludisme</option><option>Autre</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div class="form-group" style="flex:1;margin:0;"><label>Quantité *</label><input type="number" id="med-qty" min="0" value="0"></div>
+      <div class="form-group" style="flex:1;margin:0;"><label>Seuil alerte</label><input type="number" id="med-seuil" min="0" value="10"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div class="form-group" style="flex:1;margin:0;"><label>Prix achat (FCFA)</label><input type="number" id="med-prix-achat" min="0" value="0"></div>
+      <div class="form-group" style="flex:1;margin:0;"><label>Prix vente (FCFA) *</label><input type="number" id="med-prix-vente" min="0" value="0"></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:14px;">
+      <div class="form-group" style="flex:1;margin:0;"><label>Date expiration</label><input type="date" id="med-exp"></div>
+      <div class="form-group" style="flex:1;margin:0;"><label>Fournisseur</label><input type="text" id="med-fournisseur" placeholder="Nom fournisseur"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-med')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveMed()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL détail vente -->
+<div class="modal-overlay" id="modal-detail">
+  <div class="modal"><h3>🧾 Ticket de vente</h3><div id="modal-detail-content"></div>
+  <div class="modal-footer">
+    <button class="btn btn-outline" onclick="closeModal('modal-detail')">Fermer</button>
+    <button class="btn btn-primary" onclick="imprimerTicket()">🖨️ Imprimer</button>
+  </div></div>
+</div>
+
+<!-- MODAL quantité panier -->
+<div class="modal-overlay" id="modal-qty">
+  <div class="modal" style="width:320px;"><h3 id="modal-qty-title">Ajouter au panier</h3>
+    <div class="form-group" style="margin-top:10px;"><label>Quantité</label><input type="number" id="vente-qty-input" value="1" min="1"></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-qty')">Annuler</button><button class="btn btn-primary" onclick="confirmAddToCart()">Ajouter</button></div>
+  </div>
+</div>
+
+<!-- MODAL rapport caisse -->
+<div class="modal-overlay" id="modal-rapport">
+  <div class="modal" style="width:560px;">
+    <h3>🔒 Confirmation fermeture de caisse</h3>
+    <div id="rapport-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-rapport')">Annuler</button>
+      <button class="btn btn-accent" onclick="confirmerFermeture()">✅ Confirmer la fermeture</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL utilisateur -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal" style="width:400px;">
+    <h3 id="modal-user-title">Ajouter un utilisateur</h3>
+    <div class="form-group"><label>Identifiant *</label><input type="text" id="user-login" placeholder="ex: caissier2" autocomplete="off"></div>
+    <div class="form-group"><label>Mot de passe *</label><input type="password" id="user-pass" placeholder="Minimum 4 caractères" autocomplete="new-password"></div>
+    <div class="form-group"><label>Nom complet</label><input type="text" id="user-name" placeholder="ex: Mohamed Ali"></div>
+    <div class="form-group"><label>Rôle *</label>
+      <select id="user-role"><option value="caissier">Caissier (Stock + Ventes)</option><option value="admin">Admin (Accès complet)</option></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-user')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, set, push, update, remove, onValue, get }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+// ── FIREBASE CONFIG INTÉGRÉE ──
+const FIREBASE_CFG = {
+  apiKey: "AIzaSyChtpSjQIB8yReqgFYOw3SMCU5MFVSutAw",
+  databaseURL: "https://pharmagest-f3400-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "pharmagest-f3400",
+};
+
+// ── STATE ──
+const LS_KEY = 'pharmagest_cfg_v2';
+let db=null, useFirebase=false, currentUser='', currentRole='';
+let editingMedKey=null, pendingCartMed=null, editingUserKey=null;
+let cart=[], medicaments=[], ventes=[], users=[];
+
+const DEFAULT_MEDS=[
+  {nom:'Paracétamol 500mg',cat:'Analgésique',qty:85,seuil:15,prixAchat:200,prixVente:500,exp:'2026-12-01',fournisseur:''},
+  {nom:'Amoxicilline 250mg',cat:'Antibiotique',qty:42,seuil:10,prixAchat:800,prixVente:1500,exp:'2026-08-15',fournisseur:''},
+  {nom:'Ibuprofène 400mg',cat:'Analgésique',qty:7,seuil:20,prixAchat:300,prixVente:700,exp:'2025-11-30',fournisseur:''},
+  {nom:'Loratadine 10mg',cat:'Antihistaminique',qty:35,seuil:10,prixAchat:400,prixVente:900,exp:'2027-03-20',fournisseur:''},
+  {nom:'Metformine 500mg',cat:'Antidiabétique',qty:60,seuil:20,prixAchat:300,prixVente:700,exp:'2027-01-10',fournisseur:''},
+  {nom:'Oméprazole 20mg',cat:'Gastro-entérologie',qty:28,seuil:10,prixAchat:500,prixVente:1200,exp:'2026-10-15',fournisseur:''},
+];
+const DEFAULT_USERS=[
+  {login:'admin',pass:'1234',name:'Administrateur',role:'admin'},
+  {login:'caissier',pass:'pharma',name:'Caissier',role:'caissier'},
+];
+
+// ── STARTUP ──
+window.addEventListener('DOMContentLoaded',async()=>{
+  hide('loading-overlay');
+  // Connexion automatique avec la config intégrée
+  await tryConnect(FIREBASE_CFG.apiKey, FIREBASE_CFG.projectId, FIREBASE_CFG.databaseURL, false, true);
+});
+function getSaved(){try{return JSON.parse(localStorage.getItem(LS_KEY));}catch{return null;}}
+
+async function tryConnect(apiKey,projectId,databaseURL,silent=false,auto=false){
+  show('loading-overlay');
+  try{
+    const app=initializeApp({apiKey,projectId,databaseURL});
+    db=getDatabase(app);
+    await get(ref(db,'.info/connected'));
+    useFirebase=true;
+    localStorage.setItem(LS_KEY,JSON.stringify({apiKey,projectId,databaseURL}));
+    hide('setup-screen'); hide('loading-overlay');
+    await initListeners();
+    showLogin(true);
+  }catch(e){
+    hide('loading-overlay');
+    if(auto){
+      // Config intégrée échouée → mode local
+      window.useLocalMode();
+    } else if(!silent){
+      document.getElementById('setup-error').style.display='block';
+      setTimeout(()=>document.getElementById('setup-error').style.display='none',4000);
+    } else {
+      show('setup-screen');
+    }
+  }
+}
+
+async function initListeners(){
+  setSyncStatus('syncing','Chargement...');
+  onValue(ref(db,'medicaments'),snap=>{medicaments=[];snap.forEach(c=>medicaments.push({fbKey:c.key,...c.val()}));renderAll();setSyncStatus('ok','Connecté • 2 postes');});
+  onValue(ref(db,'ventes'),snap=>{ventes=[];snap.forEach(c=>ventes.push({fbKey:c.key,...c.val()}));renderAll();});
+  onValue(ref(db,'users'),snap=>{users=[];snap.forEach(c=>users.push({fbKey:c.key,...c.val()}));renderUsers();});
+  const snap=await get(ref(db,'medicaments'));
+  if(!snap.exists()) for(const m of DEFAULT_MEDS) await push(ref(db,'medicaments'),m);
+  const usnap=await get(ref(db,'users'));
+  if(!usnap.exists()) for(const u of DEFAULT_USERS) await push(ref(db,'users'),u);
+}
+
+// ── SETUP ──
+window.connectFirebase=async function(){
+  const apiKey=v('cfg-apikey'),projectId=v('cfg-projectid'),databaseURL=v('cfg-dburl');
+  if(!apiKey||!projectId||!databaseURL){alert('Remplissez tous les champs.');return;}
+  await tryConnect(apiKey,projectId,databaseURL);
+};
+window.useLocalMode=function(){
+  useFirebase=false; hide('setup-screen');
+  users=[...DEFAULT_USERS];
+  try{const m=localStorage.getItem('ph_meds');const vv=localStorage.getItem('ph_ventes');
+    medicaments=m?JSON.parse(m):DEFAULT_MEDS.map((d,i)=>({...d,fbKey:'l'+i}));
+    ventes=vv?JSON.parse(vv):[];
+    const uu=localStorage.getItem('ph_users');
+    if(uu) users=JSON.parse(uu);
+  }catch{medicaments=DEFAULT_MEDS.map((d,i)=>({...d,fbKey:'l'+i}));}
+  setSyncStatus('offline','Mode local'); renderAll(); showLogin(false);
+};
+function saveLocal(){
+  localStorage.setItem('ph_meds',JSON.stringify(medicaments));
+  localStorage.setItem('ph_ventes',JSON.stringify(ventes));
+  localStorage.setItem('ph_users',JSON.stringify(users));
+}
+
+// ── SYNC STATUS ──
+function setSyncStatus(state,label){
+  const dot=document.getElementById('sync-dot'),lbl=document.getElementById('sync-label');
+  if(!dot)return; dot.className='sync-dot '+(state==='ok'?'':state); lbl.textContent=label;
+}
+
+// ── AUTH ──
+function showLogin(fb){
+  hide('setup-screen');
+  const ls=document.getElementById('login-screen'); ls.style.display='flex';
+  document.getElementById('fb-badge').style.display=fb?'flex':'none';
+}
+
+window.doLogin=function(){
+  const login=v('login-user'), pass=v('login-pass');
+  const u=users.find(x=>x.login===login&&x.pass===pass);
+  if(u){
+    currentUser=u.login; currentRole=u.role;
+    document.getElementById('current-user').textContent=u.name||u.login;
+    document.getElementById('role-tag').textContent=u.role==='admin'?'Admin':'Caissier';
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('today-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    // Show admin menus
+    const isAdmin=u.role==='admin';
+    document.getElementById('nav-caisse').style.display=isAdmin?'flex':'none';
+    document.getElementById('nav-users').style.display=isAdmin?'flex':'none';
+    // Caissier : accès vente + historique uniquement
+    document.getElementById('nav-dashboard').style.display=isAdmin?'flex':'none';
+    document.getElementById('nav-stock').style.display=isAdmin?'flex':'none';
+    document.getElementById('nav-alertes').style.display=isAdmin?'flex':'none';
+    // Page de démarrage selon le rôle
+    if(!isAdmin){
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('page-vente').classList.add('active');
+      document.getElementById('nav-vente').classList.add('active');
+    }
+    // Init caisse date
+    document.getElementById('caisse-date').value=new Date().toISOString().split('T')[0];
+    renderAll();
+  }else{
+    const el=document.getElementById('login-error'); el.style.display='block';
+    setTimeout(()=>el.style.display='none',3000);
+  }
+};
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('login-screen').style.display==='flex')window.doLogin();});
+window.logout=function(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  cart=[]; currentUser=''; currentRole='';
+  document.getElementById('login-pass').value='';
+};
+
+// ── NAVIGATION ──
+window.showPage=function(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='caisse')renderCaisse();
+  if(name==='users')renderUsers();
+};
+
+// ── RENDER ALL ──
+function renderAll(){renderDashboard();renderStock();renderVenteTable();renderHistorique();renderAlertes();if(document.getElementById('page-caisse').classList.contains('active'))renderCaisse();}
+
+// ── DASHBOARD ──
+function renderDashboard(){
+  // Show migration card if local data exists and firebase is connected
+  const localMeds=localStorage.getItem('pharma_meds');
+  const migCard=document.getElementById('migration-card');
+  if(migCard) migCard.style.display=(useFirebase&&localMeds&&JSON.parse(localMeds).length>0)?'block':'none';
+  const now=new Date(), today=now.toISOString().split('T')[0];
+  const low=medicaments.filter(m=>m.qty<=m.seuil);
+  const exp=medicaments.filter(m=>m.exp&&(new Date(m.exp)-now)/864e5<=30);
+  const todayV=ventes.filter(v=>v.date&&v.date.startsWith(today)&&!v.archived);
+  const todayTotal=todayV.reduce((s,v)=>s+v.total,0);
+  document.getElementById('stat-total').textContent=medicaments.length;
+  document.getElementById('stat-low').textContent=low.length;
+  document.getElementById('stat-exp').textContent=exp.length;
+  document.getElementById('stat-sales').textContent=todayTotal.toLocaleString()+' FCFA';
+  document.getElementById('stat-sales-nb').textContent=todayV.length+' transaction(s)';
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];days.push({label:d.toLocaleDateString('fr-FR',{weekday:'short'}),total:ventes.filter(v=>v.date&&v.date.startsWith(ds)&&!v.archived).reduce((s,v)=>s+v.total,0)});}
+  const maxV=Math.max(...days.map(d=>d.total),1);
+  document.getElementById('week-chart').innerHTML=days.map(d=>`<div class="bar" style="height:${Math.max((d.total/maxV)*100,2)}%"><div class="bar-val">${d.total>0?(d.total/1000).toFixed(1)+'k':''}</div><div class="bar-label">${d.label}</div></div>`).join('');
+  document.getElementById('dash-alertes').innerHTML=low.length===0?'<p style="color:var(--text-muted);font-size:13px;">✅ Aucune alerte de stock</p>':low.slice(0,5).map(m=>`<div class="alerte-item" style="margin-bottom:8px;"><span>💊</span><div><div style="font-weight:600;font-size:13px;">${m.nom}</div><div style="font-size:12px;color:var(--danger)">Stock: ${m.qty} / Seuil: ${m.seuil}</div></div></div>`).join('');
+  document.getElementById('dash-sales-table').innerHTML=[...ventes].filter(v=>!v.archived).reverse().slice(0,5).map(v=>`<tr><td><strong>${v.id}</strong></td><td>${v.date}</td><td>${v.client||'—'}</td><td>${(v.items||[]).length} art.</td><td><strong>${v.total.toLocaleString()} FCFA</strong></td><td><span class="badge badge-blue">${v.vendeur}</span></td></tr>`).join('');
+}
+
+// ── STOCK ──
+let stockFilter='';
+window.filterStock=function(){stockFilter=document.getElementById('stock-search').value.toLowerCase();renderStock();};
+function renderStock(){
+  const now=new Date();
+  const list=medicaments.filter(m=>!stockFilter||m.nom.toLowerCase().includes(stockFilter)||m.cat.toLowerCase().includes(stockFilter));
+  document.getElementById('stock-table').innerHTML=list.map(m=>{
+    let sb='<span class="badge badge-green">✅ Normal</span>';
+    if(m.qty<=0)sb='<span class="badge badge-red">❌ Épuisé</span>';
+    else if(m.qty<=m.seuil)sb='<span class="badge badge-orange">⚠️ Faible</span>';
+    let expH=m.exp||'—';
+    if(m.exp){const d=(new Date(m.exp)-now)/864e5;if(d<0)expH=`<span style="color:var(--danger);font-weight:600;">${m.exp} ⛔</span>`;else if(d<=30)expH=`<span style="color:var(--accent);font-weight:600;">${m.exp} ⚠️</span>`;}
+    return`<tr><td><strong>${m.nom}</strong></td><td><span class="badge badge-blue">${m.cat}</span></td><td><strong style="color:${m.qty<=m.seuil?'var(--danger)':'inherit'}">${m.qty}</strong></td><td>${m.prixVente.toLocaleString()} FCFA</td><td>${m.prixAchat.toLocaleString()} FCFA</td><td>${expH}</td><td>${sb}</td><td><button class="btn btn-sm btn-outline" onclick="openEditMed('${m.fbKey}')" style="margin-right:4px;">✏️</button><button class="btn btn-sm btn-danger" onclick="deleteMed('${m.fbKey}')">🗑️</button></td></tr>`;
+  }).join('');
+}
+window.openAddMed=function(){editingMedKey=null;document.getElementById('modal-med-title').textContent='Ajouter un médicament';['med-nom','med-exp','med-fournisseur'].forEach(id=>document.getElementById(id).value='');['med-qty','med-prix-achat','med-prix-vente'].forEach(id=>document.getElementById(id).value='0');document.getElementById('med-seuil').value='10';openModal('modal-med');};
+window.openEditMed=function(key){const m=medicaments.find(x=>x.fbKey===key);if(!m)return;editingMedKey=key;document.getElementById('modal-med-title').textContent='Modifier le médicament';document.getElementById('med-nom').value=m.nom;document.getElementById('med-cat').value=m.cat;document.getElementById('med-qty').value=m.qty;document.getElementById('med-seuil').value=m.seuil;document.getElementById('med-prix-achat').value=m.prixAchat;document.getElementById('med-prix-vente').value=m.prixVente;document.getElementById('med-exp').value=m.exp||'';document.getElementById('med-fournisseur').value=m.fournisseur||'';openModal('modal-med');};
+window.saveMed=async function(){
+  const nom=v('med-nom'),pv=parseFloat(v('med-prix-vente'))||0;
+  if(!nom||!pv){alert('Nom et Prix de vente obligatoires.');return;}
+  const data={nom,cat:v('med-cat'),qty:parseInt(v('med-qty'))||0,seuil:parseInt(v('med-seuil'))||10,prixAchat:parseFloat(v('med-prix-achat'))||0,prixVente:pv,exp:v('med-exp')||'',fournisseur:v('med-fournisseur')||''};
+  closeModal('modal-med'); setSyncStatus('syncing','Sauvegarde...');
+  if(useFirebase){if(editingMedKey)await update(ref(db,'medicaments/'+editingMedKey),data);else await push(ref(db,'medicaments'),data);setSyncStatus('ok','Connecté • 2 postes');}
+  else{if(editingMedKey){const i=medicaments.findIndex(m=>m.fbKey===editingMedKey);if(i>=0)medicaments[i]={...medicaments[i],...data};}else medicaments.push({...data,fbKey:'l'+Date.now()});saveLocal();renderAll();setSyncStatus('offline','Mode local');}
+};
+window.deleteMed=async function(key){if(!confirm('Supprimer ce médicament ?'))return;setSyncStatus('syncing','...');if(useFirebase){await remove(ref(db,'medicaments/'+key));setSyncStatus('ok','Connecté • 2 postes');}else{medicaments=medicaments.filter(m=>m.fbKey!==key);saveLocal();renderAll();setSyncStatus('offline','Mode local');}};
+
+// ── VENTE ──
+let venteFilter='';
+window.filterVente=function(){venteFilter=document.getElementById('vente-search').value.toLowerCase();renderVenteTable();};
+function renderVenteTable(){
+  const list=medicaments.filter(m=>!venteFilter||m.nom.toLowerCase().includes(venteFilter));
+  document.getElementById('vente-med-table').innerHTML=list.map(m=>`<tr><td><strong>${m.nom}</strong></td><td>${m.cat}</td><td><span style="color:${m.qty<=m.seuil?'var(--danger)':'inherit'}">${m.qty}</span></td><td>${m.prixVente.toLocaleString()} FCFA</td><td><button class="btn btn-sm btn-primary" onclick="askAddToCart('${m.fbKey}')" ${m.qty<=0?'disabled':''}>+ Ajouter</button></td></tr>`).join('');
+  renderCart();
+}
+window.askAddToCart=function(key){pendingCartMed=medicaments.find(m=>m.fbKey===key);if(!pendingCartMed)return;document.getElementById('modal-qty-title').textContent='Ajouter: '+pendingCartMed.nom;document.getElementById('vente-qty-input').value=1;document.getElementById('vente-qty-input').max=pendingCartMed.qty;openModal('modal-qty');};
+window.confirmAddToCart=function(){const qty=parseInt(v('vente-qty-input'))||1;if(qty<=0||qty>pendingCartMed.qty){alert('Quantité invalide');return;}const ex=cart.find(c=>c.key===pendingCartMed.fbKey);if(ex){if(ex.qty+qty>pendingCartMed.qty){alert('Stock insuffisant');return;}ex.qty+=qty;}else cart.push({key:pendingCartMed.fbKey,nom:pendingCartMed.nom,prix:pendingCartMed.prixVente,qty});closeModal('modal-qty');renderCart();};
+function renderCart(){
+  const div=document.getElementById('cart-items');
+  if(cart.length===0){div.innerHTML='<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:18px;">Panier vide</p>';document.getElementById('cart-total-val').textContent='0 FCFA';return;}
+  div.innerHTML=cart.map(c=>`<div class="cart-item"><span style="flex:1;font-weight:500;font-size:13px;">${c.nom}</span><div style="display:flex;align-items:center;gap:5px;"><button class="btn btn-sm" style="padding:2px 7px;background:var(--surface2);" onclick="changeQty('${c.key}',-1)">−</button><span style="min-width:22px;text-align:center;font-weight:600;">${c.qty}</span><button class="btn btn-sm" style="padding:2px 7px;background:var(--surface2);" onclick="changeQty('${c.key}',1)">+</button></div><span style="width:85px;text-align:right;font-weight:600;">${(c.prix*c.qty).toLocaleString()} FCFA</span><button class="btn btn-sm btn-danger" onclick="removeFromCart('${c.key}')" style="padding:3px 7px;">✕</button></div>`).join('');
+  document.getElementById('cart-total-val').textContent=cart.reduce((s,c)=>s+c.prix*c.qty,0).toLocaleString()+' FCFA';
+}
+window.changeQty=function(key,delta){const item=cart.find(c=>c.key===key),med=medicaments.find(m=>m.fbKey===key);if(!item||!med)return;item.qty=Math.max(1,Math.min(item.qty+delta,med.qty));renderCart();};
+window.removeFromCart=function(key){cart=cart.filter(c=>c.key!==key);renderCart();};
+window.clearCart=function(){cart=[];renderCart();};
+window.finaliserVente=async function(){
+  if(cart.length===0){alert('Panier vide!');return;}
+  const total=cart.reduce((s,c)=>s+c.prix*c.qty,0);
+  const client=v('vente-client')||'Anonyme';
+  const dateStr=new Date().toISOString().replace('T',' ').substring(0,16);
+  const venteData={id:'V'+Date.now(),date:dateStr,client,items:cart.map(c=>({nom:c.nom,qty:c.qty,prix:c.prix})),total,vendeur:currentUser,archived:false};
+  setSyncStatus('syncing','Enregistrement...');
+  if(useFirebase){
+    await push(ref(db,'ventes'),venteData);
+    for(const c of cart){const med=medicaments.find(m=>m.fbKey===c.key);if(med)await update(ref(db,'medicaments/'+med.fbKey),{qty:med.qty-c.qty});}
+    setSyncStatus('ok','Connecté • 2 postes');
+  }else{
+    ventes.push({...venteData,fbKey:'lv'+Date.now()});
+    cart.forEach(c=>{const med=medicaments.find(m=>m.fbKey===c.key);if(med)med.qty-=c.qty;});
+    saveLocal();renderAll();setSyncStatus('offline','Mode local');
+  }
+  cart=[];document.getElementById('vente-client').value='';
+  renderCart();renderVenteTable();
+  // Afficher le ticket automatiquement
+  const lastVente = useFirebase ? null : ventes[ventes.length-1];
+  if(!useFirebase && lastVente) showDetail(lastVente.fbKey);
+  else alert(`✅ Vente enregistrée!\nTotal: ${total.toLocaleString()} FCFA\n\nAllez dans Historique pour imprimer le ticket.`);
+};
+
+// ── HISTORIQUE ──
+let histoFilter='';
+window.filterHistorique=function(){histoFilter=v('filter-date');renderHistorique();};
+window.resetFilterDate=function(){histoFilter='';document.getElementById('filter-date').value='';renderHistorique();};
+function renderHistorique(){
+  let list=histoFilter?ventes.filter(v=>v.date&&v.date.startsWith(histoFilter)):ventes;
+  list=[...list].reverse();
+  document.getElementById('historique-table').innerHTML=list.map(v=>`<tr><td><strong>${v.id}</strong></td><td>${v.date}</td><td>${v.client||'—'}</td><td>${(v.items||[]).length} art.</td><td><strong>${v.total.toLocaleString()} FCFA</strong></td><td><span class="badge badge-blue">${v.vendeur}</span></td><td>${v.archived?'<span class="badge badge-orange">Archivé</span>':''}<button class="btn btn-sm btn-outline" onclick="showDetail('${v.fbKey}')" style="margin-left:4px;">👁 Voir</button></td></tr>`).join('');
+  document.getElementById('histo-total').textContent=list.reduce((s,v)=>s+v.total,0).toLocaleString()+' FCFA';
+}
+window.showDetail=function(key){
+  const vn=ventes.find(x=>x.fbKey===key);if(!vn)return;
+  document.getElementById('modal-detail-content').innerHTML=`
+    <div style="text-align:center;padding-bottom:12px;border-bottom:2px dashed #ccc;margin-bottom:14px;">
+      <div style="font-size:11px;color:#666;letter-spacing:1px;text-transform:uppercase;">Dépôt Pharmaceutique</div>
+      <div style="font-size:17px;font-weight:700;font-family:'DM Serif Display',serif;color:var(--primary);margin:4px 0;">Sainte Monique de Lebamba</div>
+      <div style="font-size:12px;color:#666;">📍 Lebamba, Gabon</div>
+      <div style="font-size:12px;color:#666;margin-top:3px;">📞 077.91.44.09 / 077.48.76.09</div>
+      <div style="font-size:11px;color:#888;margin-top:4px;">──────────────────────</div>
+    </div>
+    <div style="margin-bottom:14px;font-size:13px;line-height:2;">
+      <p><strong>N° Ticket:</strong> ${vn.id}</p>
+      <p><strong>Date:</strong> ${vn.date}</p>
+      <p><strong>Client:</strong> ${vn.client||'Anonyme'}</p>
+      <p><strong>Caissier:</strong> ${vn.vendeur}</p>
+      ${vn.archived?'<p><span class="badge badge-orange">Caisse clôturée</span></p>':''}
+    </div>
+    <div style="font-size:11px;color:#888;text-align:center;margin-bottom:8px;">──────────────────────</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:var(--surface2);">
+        <th style="padding:9px;text-align:left;font-size:12px;">Médicament</th>
+        <th style="padding:9px;text-align:center;font-size:12px;">Qté</th>
+        <th style="padding:9px;text-align:right;font-size:12px;">Prix</th>
+        <th style="padding:9px;text-align:right;font-size:12px;">Total</th>
+      </tr></thead>
+      <tbody>${(vn.items||[]).map(i=>`
+        <tr>
+          <td style="padding:9px;font-size:13px;">${i.nom}</td>
+          <td style="padding:9px;text-align:center;">${i.qty}</td>
+          <td style="padding:9px;text-align:right;">${i.prix.toLocaleString()} FCFA</td>
+          <td style="padding:9px;text-align:right;">${(i.prix*i.qty).toLocaleString()} FCFA</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:#888;text-align:center;margin-top:8px;">──────────────────────</div>
+    <div style="text-align:right;margin-top:12px;padding:12px;background:var(--primary-pale);border-radius:8px;">
+      <span style="font-size:13px;">Total à payer</span><br>
+      <strong style="font-size:22px;font-family:'DM Serif Display',serif;color:var(--primary);">${vn.total.toLocaleString()} FCFA</strong>
+    </div>
+    <div style="text-align:center;margin-top:16px;padding-top:12px;border-top:2px dashed #ccc;">
+      <div style="font-size:14px;font-style:italic;color:var(--primary);font-family:'DM Serif Display',serif;">🙏 Bonne guérison !</div>
+      <div style="font-size:11px;color:#aaa;margin-top:6px;">Merci de votre confiance</div>
+      <div style="font-size:11px;color:#aaa;">Dépôt Pharmaceutique Sainte Monique — Lebamba</div>
+      <div style="font-size:10px;color:#bbb;margin-top:6px;line-height:1.8;">
+        NIF : 229184A &nbsp;|&nbsp; RCCM : RG ML/2022-A-593
+      </div>
+    </div>`;
+  openModal('modal-detail');
+};
+
+// ── ALERTES ──
+function renderAlertes(){
+  const now=new Date();
+  const low=medicaments.filter(m=>m.qty<=m.seuil);
+  const exp=medicaments.filter(m=>m.exp&&(new Date(m.exp)-now)/864e5<=30);
+  document.getElementById('alertes-stock').innerHTML=low.length===0?'<p style="color:var(--text-muted);font-size:13px;">✅ Tous les stocks sont suffisants</p>':low.map(m=>`<div class="alerte-item" style="margin-bottom:8px;"><span style="font-size:22px;">💊</span><div style="flex:1;"><div style="font-weight:600;">${m.nom}</div><div style="font-size:12px;color:var(--danger)">Qté: ${m.qty} / Seuil: ${m.seuil}</div></div><span class="badge badge-red">Faible</span></div>`).join('');
+  document.getElementById('alertes-expiration').innerHTML=exp.length===0?'<p style="color:var(--text-muted);font-size:13px;">✅ Aucun médicament n\'expire prochainement</p>':exp.map(m=>{const diff=Math.ceil((new Date(m.exp)-now)/864e5);return`<div class="alerte-item" style="margin-bottom:8px;background:${diff<0?'#fdeaea':'#fef3d7'};border-color:${diff<0?'#f5c6cb':'#fcd34d'};"><span style="font-size:22px;">⏰</span><div style="flex:1;"><div style="font-weight:600;">${m.nom}</div><div style="font-size:12px;color:${diff<0?'var(--danger)':'var(--accent)'}">Expire: ${m.exp} (${diff<0?'Expiré depuis '+Math.abs(diff)+' j':diff+' j restants'})</div></div><span class="badge ${diff<0?'badge-red':'badge-orange'}">${diff<0?'Expiré':'Urgent'}</span></div>`;}).join('');
+}
+
+// ── CAISSE ──
+window.renderCaisse=function(){
+  const dateStr=v('caisse-date')||new Date().toISOString().split('T')[0];
+  document.getElementById('caisse-date-label').textContent=new Date(dateStr+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  const dayV=ventes.filter(vv=>vv.date&&vv.date.startsWith(dateStr)&&!vv.archived);
+  const total=dayV.reduce((s,vv)=>s+vv.total,0);
+  const benefit=dayV.reduce((s,vv)=>{const b=(vv.items||[]).reduce((ss,it)=>{const med=medicaments.find(m=>m.nom===it.nom);return ss+(med?(it.prix-med.prixAchat)*it.qty:0);},0);return s+b;},0);
+  document.getElementById('c-nb').textContent=dayV.length;
+  document.getElementById('c-total').textContent=total.toLocaleString()+' FCFA';
+  document.getElementById('c-benefit').textContent=benefit.toLocaleString()+' FCFA';
+  document.getElementById('caisse-total-bottom').textContent=total.toLocaleString()+' FCFA';
+  document.getElementById('caisse-table').innerHTML=dayV.length===0?'<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Aucune vente ce jour</td></tr>':dayV.map(vv=>`<tr><td>${vv.date.split(' ')[1]||'—'}</td><td>${vv.client||'—'}</td><td>${(vv.items||[]).length} art.</td><td><strong>${vv.total.toLocaleString()} FCFA</strong></td><td><span class="badge badge-blue">${vv.vendeur}</span></td></tr>`).join('');
+  // Par vendeur
+  const byVendeur={};dayV.forEach(vv=>{byVendeur[vv.vendeur]=(byVendeur[vv.vendeur]||0)+vv.total;});
+  document.getElementById('caisse-par-vendeur').innerHTML=Object.keys(byVendeur).length===0?'<p style="color:var(--text-muted);font-size:13px;">Aucune vente</p>':Object.entries(byVendeur).map(([k,t])=>`<div class="rapport-line"><span>👤 ${k}</span><strong>${t.toLocaleString()} FCFA</strong></div>`).join('');
+  // Top meds
+  const medCount={};dayV.forEach(vv=>(vv.items||[]).forEach(it=>{medCount[it.nom]=(medCount[it.nom]||0)+it.qty;}));
+  const topMeds=Object.entries(medCount).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  document.getElementById('caisse-top-meds').innerHTML=topMeds.length===0?'<p style="color:var(--text-muted);font-size:13px;">Aucune vente</p>':topMeds.map(([n,q])=>`<div class="rapport-line"><span>💊 ${n}</span><strong>${q} unités</strong></div>`).join('');
+};
+
+window.fermerCaisse=function(){
+  if(currentRole!=='admin'){alert('Accès Admin uniquement.');return;}
+  const dateStr=v('caisse-date')||new Date().toISOString().split('T')[0];
+  const dayV=ventes.filter(vv=>vv.date&&vv.date.startsWith(dateStr)&&!vv.archived);
+  if(dayV.length===0){alert('Aucune vente à clôturer pour cette date.');return;}
+  const total=dayV.reduce((s,vv)=>s+vv.total,0);
+  const dateLabel=new Date(dateStr+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('rapport-content').innerHTML=`
+    <div style="background:var(--surface2);border-radius:10px;padding:18px;margin-bottom:16px;">
+      <div class="rapport-line"><span>📅 Date</span><strong>${dateLabel}</strong></div>
+      <div class="rapport-line"><span>🧾 Nombre de ventes</span><strong>${dayV.length}</strong></div>
+      <div class="rapport-line"><span>💰 Total encaissé</span><strong style="color:var(--primary);font-size:16px;">${total.toLocaleString()} FCFA</strong></div>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);">⚠️ Ces ventes seront marquées comme <strong>archivées</strong>. Elles resteront visibles dans l'historique mais ne seront plus comptées dans les ventes actives.</p>`;
+  openModal('modal-rapport');
+};
+
+window.confirmerFermeture=async function(){
+  const dateStr=v('caisse-date')||new Date().toISOString().split('T')[0];
+  const dayV=ventes.filter(vv=>vv.date&&vv.date.startsWith(dateStr)&&!vv.archived);
+  setSyncStatus('syncing','Clôture...');
+  if(useFirebase){
+    for(const vv of dayV) await update(ref(db,'ventes/'+vv.fbKey),{archived:true});
+    setSyncStatus('ok','Connecté • 2 postes');
+  }else{
+    dayV.forEach(vv=>vv.archived=true);
+    saveLocal();renderAll();setSyncStatus('offline','Mode local');
+  }
+  closeModal('modal-rapport');
+  renderCaisse();renderDashboard();
+  alert(`✅ Caisse du ${dateStr} clôturée avec succès!\nLes ventes sont archivées.`);
+};
+
+window.printRapport=function(){window.print();};
+
+// ── USERS ──
+function renderUsers(){
+  if(!document.getElementById('users-list'))return;
+  document.getElementById('users-list').innerHTML=users.map(u=>`
+    <div class="user-card">
+      <div class="user-avatar ${u.role==='admin'?'admin-av':''}">${(u.name||u.login).charAt(0).toUpperCase()}</div>
+      <div class="user-info">
+        <div class="u-name">${u.name||u.login} <span class="badge ${u.role==='admin'?'badge-gold':'badge-blue'}" style="margin-left:6px;">${u.role==='admin'?'👑 Admin':'💊 Caissier'}</span></div>
+        <div class="u-role">Identifiant: <code style="background:var(--surface);padding:1px 5px;border-radius:4px;font-size:11px;">${u.login}</code></div>
+      </div>
+      <div class="user-actions">
+        <button class="btn btn-sm btn-outline" onclick="openEditUser('${u.fbKey||u.login}')">✏️ Modifier</button>
+        ${u.login==='admin'?'':'<button class="btn btn-sm btn-danger" onclick="deleteUser(\''+u.fbKey+'\')" >🗑️</button>'}
+      </div>
+    </div>`).join('');
+}
+
+window.openAddUser=function(){
+  if(currentRole!=='admin'){alert('Accès Admin uniquement.');return;}
+  editingUserKey=null;
+  document.getElementById('modal-user-title').textContent='Ajouter un utilisateur';
+  ['user-login','user-pass','user-name'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('user-role').value='caissier';
+  openModal('modal-user');
+};
+
+window.openEditUser=function(key){
+  if(currentRole!=='admin'){alert('Accès Admin uniquement.');return;}
+  const u=users.find(x=>(x.fbKey||x.login)===key);if(!u)return;
+  editingUserKey=key;
+  document.getElementById('modal-user-title').textContent='Modifier l\'utilisateur';
+  document.getElementById('user-login').value=u.login;
+  document.getElementById('user-pass').value=u.pass;
+  document.getElementById('user-name').value=u.name||'';
+  document.getElementById('user-role').value=u.role;
+  openModal('modal-user');
+};
+
+window.saveUser=async function(){
+  const login=v('user-login').trim(), pass=v('user-pass').trim();
+  if(!login||!pass||pass.length<4){alert('Identifiant et mot de passe (min. 4 caractères) obligatoires.');return;}
+  if(!editingUserKey&&users.find(u=>u.login===login)){alert('Cet identifiant existe déjà.');return;}
+  const data={login,pass,name:v('user-name')||login,role:v('user-role')};
+  closeModal('modal-user'); setSyncStatus('syncing','...');
+  if(useFirebase){
+    if(editingUserKey){const u=users.find(x=>(x.fbKey||x.login)===editingUserKey);if(u)await update(ref(db,'users/'+u.fbKey),data);}
+    else await push(ref(db,'users'),data);
+    setSyncStatus('ok','Connecté • 2 postes');
+  }else{
+    if(editingUserKey){const i=users.findIndex(u=>(u.fbKey||u.login)===editingUserKey);if(i>=0)users[i]={...users[i],...data};}
+    else users.push({...data,fbKey:'u'+Date.now()});
+    saveLocal();renderUsers();setSyncStatus('offline','Mode local');
+  }
+};
+
+window.deleteUser=async function(key){
+  const u=users.find(x=>(x.fbKey||x.login)===key);
+  if(!u)return;
+  if(u.login==='admin'){alert('Impossible de supprimer le compte admin principal.');return;}
+  if(!confirm(`Supprimer le compte "${u.login}" ?`))return;
+  setSyncStatus('syncing','...');
+  if(useFirebase){await remove(ref(db,'users/'+u.fbKey));setSyncStatus('ok','Connecté • 2 postes');}
+  else{users=users.filter(x=>(x.fbKey||x.login)!==key);saveLocal();renderUsers();setSyncStatus('offline','Mode local');}
+};
+
+// ── MIGRATION LOCAL → FIREBASE ──
+window.migrerVersFirebase=async function(){
+  if(!useFirebase){alert('❌ Firebase non connecté !');return;}
+  const meds=JSON.parse(localStorage.getItem('pharma_meds')||'[]');
+  const vts=JSON.parse(localStorage.getItem('pharma_ventes')||'[]');
+  if(meds.length===0&&vts.length===0){alert('Aucune donnée locale à migrer.');return;}
+  if(!confirm(`Migrer ${meds.length} médicaments et ${vts.length} ventes vers Firebase ?`))return;
+  setSyncStatus('syncing','Migration...');
+  try{
+    // Clear existing Firebase data
+    await remove(ref(db,'medicaments'));
+    await remove(ref(db,'ventes'));
+    // Push meds
+    for(const m of meds){
+      const {fbKey,...data}=m;
+      await push(ref(db,'medicaments'),data);
+    }
+    // Push ventes
+    for(const v of vts){
+      const {fbKey,...data}=v;
+      await push(ref(db,'ventes'),data);
+    }
+    setSyncStatus('ok','Migration réussie ✓');
+    alert(`✅ Migration réussie !\n${meds.length} médicaments et ${vts.length} ventes transférés vers Firebase.\nLes 2 ordinateurs ont maintenant les mêmes données !`);
+  }catch(e){
+    setSyncStatus('error','Erreur migration');
+    alert('❌ Erreur: '+e.message);
+  }
+};
+window.openModal=function(id){document.getElementById(id).classList.add('open');};
+window.closeModal=function(id){document.getElementById(id).classList.remove('open');};
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function show(id){document.getElementById(id).style.display='flex';}
+function hide(id){document.getElementById(id).style.display='none';}
+
+window.imprimerTicket=function(){
+  const content=document.getElementById('modal-detail-content').innerHTML;
+  const win=window.open('','_blank','width=350,height=600');
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Ticket — Dépôt Pharmaceutique Sainte Monique</title>
+    <style>
+      body{font-family:Arial,sans-serif;max-width:300px;margin:0 auto;padding:10px;font-size:12px;}
+      table{width:100%;border-collapse:collapse;}
+      th,td{padding:5px;border-bottom:1px solid #eee;}
+      .no-print{display:none;}
+      @media print{body{max-width:100%;}}
+    </style>
+  </head><body>${content}
+  <script>window.onload=function(){window.print();window.close();}<\/script>
+  </body></html>`);
+  win.document.close();
+};
+</script>
+</body>
+</html>
