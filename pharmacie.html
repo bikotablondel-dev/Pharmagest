@@ -507,16 +507,16 @@ async function tryConnect(apiKey,projectId,databaseURL,silent=false,auto=false){
   try{
     const app=initializeApp({apiKey,projectId,databaseURL});
     db=getDatabase(app);
-    await get(ref(db,'.info/connected'));
+    // Ne pas tester .info/connected — fonctionne même si null
     useFirebase=true;
     localStorage.setItem(LS_KEY,JSON.stringify({apiKey,projectId,databaseURL}));
     hide('setup-screen'); hide('loading-overlay');
     await initListeners();
     showLogin(true);
   }catch(e){
+    console.error('Firebase error:',e);
     hide('loading-overlay');
     if(auto){
-      // Config intégrée échouée → mode local
       window.useLocalMode();
     } else if(!silent){
       document.getElementById('setup-error').style.display='block';
